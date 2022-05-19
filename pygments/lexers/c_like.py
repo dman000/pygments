@@ -689,6 +689,7 @@ class FlexLexer(RegexLexer):
     tokens = {
         # Handle the definitions section
         'root': [
+            #(r'(.+?)', using(CLexer)),
             (r'%{',String.Delimiter,'header'),
             (r'%%', String.Delimiter, 'rules'),
             (words(('bool', 'int', 'long', 'float', 'short', 'double', 'char',
@@ -702,6 +703,7 @@ class FlexLexer(RegexLexer):
             (r'(%[sx])(\s)(\w+)', bygroups(Keyword, Whitespace, Name)),
             (r'((?!\d)(?:[\w$]|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})+)(\s+)(=)', bygroups(Name.Variable, Whitespace, Operator)),
             (r'(\b[_a-zA-Z0-9][\w\-]+)(\s+)', bygroups(Name, Whitespace),'regex'),
+            (r'[\[\]{},\(\)]', Punctuation),
             # include('whitespace'),
 
         ],
@@ -713,7 +715,10 @@ class FlexLexer(RegexLexer):
         # Handle the rules section
         'rules': [
             include('whitespace'),
+            include('regex'), 
+            #include('usercode'),
             (r'%%', String.Delimiter, ('usercode', '#pop')),
+            include('root')
         ],
         # Handle the user code section
         'usercode': [
@@ -728,24 +733,34 @@ class FlexLexer(RegexLexer):
         ],
         # Handle regular expressions
         'regex': [
+            include('keywords'),
             (r'\n', Whitespace, '#pop'),
-            (r'"', String, 'string'),
+            (r'["\']', String, 'string'),
             (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
             (r'\w', Name),
-            (r'[|/*+?^$.-]', Operator),
-            (r'\\[abfnrtv]', String.Esacpe),
+            (r'[|/*+?^$.\-\<\>\!\&]', Operator),
+            (r'\\[abfnrtv]', String.Escape),
             (r'\\[AbBdDsSwWZ]', String.Regex),
             (r'\\.', String.Literal),
-            (r'[\[\]{},\(\)]', Punctuation),
+            (r'[\[\]{},\(\)]', Punctuation),  
         ],
         # Handle strings
         'string': [
-            (r'"', String, '#pop'),
-            (r'\\[abfnrtv]', String.Esacpe),
+            (r'["\']', String, '#pop'),
+            (r'\\[abfnrtv]', String.Escape),
             (r'\\.', String.Literal),
             (r'.', String),
+        ],
+        'keywords': [
+            (words((
+                'yytext','yylmax','yyleng','yyin','yylineno','yy_current_buffer', 'yy_break','yy_buffer_state','yy_flex_debug','yy_end_of_buffer_char','yy_user_action','yy_user_init','yy_act','yy_interactive','yy_start','yy_decl','yy_flex_major_version', 'yy_flex_minor_version',
+            )), Name.Builtin),
+            (words((
+                'yylex', 'yymore', 'yyterminate', 'yy_input', 'yyless', 'yycopy', 'yyrestart', 'yy_scan_string', 'yy_scan_bytes', 'yy_scan_buffer', 'yywrap',  'yy_set_interactive','yy_set_bol','yy_at_bol','yy_create_buffer','yy_delete_buffer','yy_flush_buffer', 'yy_flex_debug','yy_init_buffer','yy_flush_buffer','yy_load_buffer_state','yy_switch_to_buffer','yy_pop_state','yy_push_state','yy_top_state','yyFlexLexer'
+            )), Name.Function),
+            inherit,
         ],
     }
 

@@ -753,6 +753,7 @@ class FlexLexer(RegexLexer):
             (r'\\.', String.Literal),
             (r'.', String),
         ],
+        # Handle builtin functions and attributes
         'keywords': [
             (words((
                 'yytext','yylmax','yyleng','yyin','yylineno','yy_current_buffer', 'yy_break','yy_buffer_state','yy_flex_debug','yy_end_of_buffer_char','yy_user_action','yy_user_init','yy_act','yy_interactive','yy_start','yy_decl','yy_flex_major_version', 'yy_flex_minor_version',

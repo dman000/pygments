@@ -689,7 +689,6 @@ class FlexLexer(RegexLexer):
     tokens = {
         # Handle the definitions section
         'root': [
-            #(r'(.+?)', using(CLexer)),
             (r'%{',String.Delimiter,'header'),
             (r'%%', String.Delimiter, 'rules'),
             (words(('bool', 'int', 'long', 'float', 'short', 'double', 'char',
@@ -703,7 +702,6 @@ class FlexLexer(RegexLexer):
             (r'(%[sx])(\s)(\w+)', bygroups(Keyword, Whitespace, Name)),
             (r'((?!\d)(?:[\w$]|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})+)(\s+)(=)', bygroups(Name.Variable, Whitespace, Operator)),
             (r'(\b[_a-zA-Z0-9][\w\-]+)(\s+)', bygroups(Name, Whitespace),'regex'),
-            (r'[\[\]{},\(\)]', Punctuation),
             # include('whitespace'),
 
         ],
@@ -714,11 +712,30 @@ class FlexLexer(RegexLexer):
         ],
         # Handle the rules section
         'rules': [
+            (r'%%', String.Delimiter, ('usercode')),
+            (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'"', String, 'string'),
+            (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
+            (r'\{[\w_]+\}', Name.Variable),
+            (r'\d+', Number),
+            (r'\w', Name),
+            (r'[|/+*?^$.\-\<\>\!\&]', Operator),
+            (r'\\[abfnrtv]', String.Escape),
+            (r'\\[AbBdDsSwWZ]', String.Regex),
+            (r'\\.', String.Literal),
+            (r'[\[\]}\,\(\)]', Punctuation), 
+
+            (r'{',Punctuation,'cLexer'),
+            (r'.+?',using(CLexer)),
             include('whitespace'),
-            include('regex'), 
-            #include('usercode'),
-            (r'%%', String.Delimiter, ('usercode', '#pop')),
-            include('root')
+        ],
+        'cLexer': [
+            include('whitespace'),
+            (r'{',Punctuation,'#push'),
+            (r'}',Punctuation,'#pop'),
+            (r'"', String, 'string'),
+            (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'.+?\n',using(CLexer)),
         ],
         # Handle the user code section
         'usercode': [
@@ -733,9 +750,8 @@ class FlexLexer(RegexLexer):
         ],
         # Handle regular expressions
         'regex': [
-            include('keywords'),
             (r'\n', Whitespace, '#pop'),
-            (r'["\']', String, 'string'),
+            (r'"', String, 'string'),
             (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
@@ -744,14 +760,22 @@ class FlexLexer(RegexLexer):
             (r'\\[abfnrtv]', String.Escape),
             (r'\\[AbBdDsSwWZ]', String.Regex),
             (r'\\.', String.Literal),
-            (r'[\[\]{},\(\)]', Punctuation),  
+            (r'[\[\]{}\,\(\)]', Punctuation),  
+            include('whitespace'),
         ],
         # Handle strings
         'string': [
-            (r'["\']', String, '#pop'),
+            (r'"', String, '#pop'),
             (r'\\[abfnrtv]', String.Escape),
             (r'\\.', String.Literal),
             (r'.', String),
+        ],
+        'CommentMulti': [
+            #(r'\*/', String, '#pop'),
+            (r'[^*]+', Comment.Multiline),
+            (r'\*/', Comment.Multiline, '#pop'),
+            (r'\*', Comment.Multiline),
+            include('whitespace'),
         ],
         # Handle builtin functions and attributes
         'keywords': [

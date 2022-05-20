@@ -712,8 +712,9 @@ class FlexLexer(RegexLexer):
         ],
         # Handle the rules section
         'rules': [
+            include('whitespace'),
             (r'%%', String.Delimiter, ('usercode')),
-            (r'/\*',Comment.Multiline,'CommentMulti'),
+            #(r'/\*',Comment.Multiline,'CommentMulti'),
             (r'"', String, 'string'),
             (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
@@ -724,17 +725,17 @@ class FlexLexer(RegexLexer):
             (r'\\[AbBdDsSwWZ]', String.Regex),
             (r'\\.', String.Literal),
             (r'[\[\]}\,\(\)]', Punctuation), 
-
             (r'{',Punctuation,'cLexer'),
             (r'.+?',using(CLexer)),
-            include('whitespace'),
+            #include('whitespace'),
         ],
+        #Handle c Code
         'cLexer': [
             include('whitespace'),
             (r'{',Punctuation,'#push'),
             (r'}',Punctuation,'#pop'),
             (r'"', String, 'string'),
-            (r'/\*',Comment.Multiline,'CommentMulti'),
+           # (r'/\*',Comment.Multiline,'CommentMulti'),
             (r'.+?\n',using(CLexer)),
         ],
         # Handle the user code section
@@ -770,13 +771,13 @@ class FlexLexer(RegexLexer):
             (r'\\.', String.Literal),
             (r'.', String),
         ],
-        'CommentMulti': [
-            #(r'\*/', String, '#pop'),
-            (r'[^*]+', Comment.Multiline),
-            (r'\*/', Comment.Multiline, '#pop'),
-            (r'\*', Comment.Multiline),
-            include('whitespace'),
-        ],
+        #'CommentMulti': [
+        #   #(r'\*/', String, '#pop'),
+        #  (r'[^*]+', Comment.Multiline),
+        #  (r'\*/', Comment.Multiline, '#pop'),
+        #  (r'\*', Comment.Multiline),
+        # include('whitespace'),
+        # ],
         # Handle builtin functions and attributes
         'keywords': [
             (words((

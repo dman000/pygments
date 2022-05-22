@@ -712,13 +712,12 @@ class FlexLexer(RegexLexer):
         # Handle the rules section
         'rules': [
             #include('whitespace'),
-            (r'%%', String.Delimiter, ('usercode', '#pop')),
-            (r'\[',String,'regex'),
-            ('\n',Whitespace),
+            (r'%%', String.Delimiter, ('usercode')),
             (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'\n',Whitespace),
             (r'[\t\s]+',Whitespace,'cLexer'),
             (r'"', String, 'string'),
-            (r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
+            (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
             (r'\w', Name),
@@ -731,10 +730,21 @@ class FlexLexer(RegexLexer):
         ],
         #Handle c Code
         'cLexer': [
-            include('whitespace'),
+            (r'\n',Whitespace,'#pop'),
+            #include('whitespace'),
             (r'"', String, 'string'),
-           # (r'/\*',Comment.Multiline,'CommentMulti'),
-            (r'.+?\n',using(CLexer),'#pop'),
+            (r'{',String,'multilineLex'),
+            (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'(.+?)(\n)',bygroups(using(CLexer),Whitespace),'#pop'),
+        ],
+        #Handle multiple lines of c Code when between curly brackets
+        'multilineLex': [
+            include('whitespace'),
+            (r'{',String.Delimiter,'#push'),
+            (r'}',Name.Builtin,'#pop'),
+            (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'(.+?)(\n)',bygroups(using(CLexer),Whitespace)),
+
         ],
         # Handle the user code section
         'usercode': [
@@ -750,7 +760,6 @@ class FlexLexer(RegexLexer):
         # Handle regular expressions
         'regex': [
             (r'\n', Whitespace, '#pop'),
-            (r'\]',String,'#pop'),
             (r'"', String, 'string'),
             (r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
@@ -771,7 +780,7 @@ class FlexLexer(RegexLexer):
             (r'.', String),
         ],
         'CommentMulti': [
-            (r'\*/', String, '#pop'),
+            (r'\*/', Comment.Multiline, '#pop'),
             (r'[^*]+', Comment.Multiline),
             (r'\*/', Comment.Multiline, '#pop'),
             (r'\*', Comment.Multiline),

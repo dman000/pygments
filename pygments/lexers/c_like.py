@@ -703,7 +703,6 @@ class FlexLexer(RegexLexer):
             (r'((?!\d)(?:[\w$]|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})+)(\s+)(=)', bygroups(Name.Variable, Whitespace, Operator)),
             (r'(\b[_a-zA-Z0-9][\w\-]+)(\s+)', bygroups(Name, Whitespace),'regex'),
             # include('whitespace'),
-
         ],
         'header': [
             (r'(#include)(\s)(<\w*\.\w*>)', bygroups(Keyword, Whitespace,Name)),
@@ -712,11 +711,14 @@ class FlexLexer(RegexLexer):
         ],
         # Handle the rules section
         'rules': [
-            include('whitespace'),
-            (r'%%', String.Delimiter, ('usercode')),
-            #(r'/\*',Comment.Multiline,'CommentMulti'),
+            #include('whitespace'),
+            (r'%%', String.Delimiter, ('usercode', '#pop')),
+            (r'\[',String,'regex'),
+            ('\n',Whitespace),
+            (r'/\*',Comment.Multiline,'CommentMulti'),
+            (r'[\t\s]+',Whitespace,'cLexer'),
             (r'"', String, 'string'),
-            (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
+            (r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
             (r'\w', Name),
@@ -724,19 +726,15 @@ class FlexLexer(RegexLexer):
             (r'\\[abfnrtv]', String.Escape),
             (r'\\[AbBdDsSwWZ]', String.Regex),
             (r'\\.', String.Literal),
-            (r'[\[\]}\,\(\)]', Punctuation), 
-            (r'{',Punctuation,'cLexer'),
-            (r'.+?',using(CLexer)),
-            #include('whitespace'),
+            (r'[\[\]{}}\,\(\)]', Punctuation), 
+            include('whitespace'),
         ],
         #Handle c Code
         'cLexer': [
             include('whitespace'),
-            (r'{',Punctuation,'#push'),
-            (r'}',Punctuation,'#pop'),
             (r'"', String, 'string'),
            # (r'/\*',Comment.Multiline,'CommentMulti'),
-            (r'.+?\n',using(CLexer)),
+            (r'.+?\n',using(CLexer),'#pop'),
         ],
         # Handle the user code section
         'usercode': [
@@ -752,8 +750,9 @@ class FlexLexer(RegexLexer):
         # Handle regular expressions
         'regex': [
             (r'\n', Whitespace, '#pop'),
+            (r'\]',String,'#pop'),
             (r'"', String, 'string'),
-            (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
+            (r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
             (r'\w', Name),
@@ -771,13 +770,13 @@ class FlexLexer(RegexLexer):
             (r'\\.', String.Literal),
             (r'.', String),
         ],
-        #'CommentMulti': [
-        #   #(r'\*/', String, '#pop'),
-        #  (r'[^*]+', Comment.Multiline),
-        #  (r'\*/', Comment.Multiline, '#pop'),
-        #  (r'\*', Comment.Multiline),
-        # include('whitespace'),
-        # ],
+        'CommentMulti': [
+            (r'\*/', String, '#pop'),
+            (r'[^*]+', Comment.Multiline),
+            (r'\*/', Comment.Multiline, '#pop'),
+            (r'\*', Comment.Multiline),
+            include('whitespace'),
+         ],
         # Handle builtin functions and attributes
         'keywords': [
             (words((
@@ -812,3 +811,22 @@ class FlexLexer(RegexLexer):
     #         inherit,
     #     ]
     # }
+    #'rules': [
+     #       #include('whitespace'),
+      #      (r'%%', String.Delimiter, ('usercode', '#pop')),
+       #     (r'\[',String,'regex'),
+        #    ('\n',Whitespace),
+         #   (r'/\*',Comment.Multiline,'CommentMulti'),
+          #  (r'[\t\s]+',Whitespace,'cLexer'),
+           # (r'"', String, 'string'),
+            #(r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
+            #(r'\{[\w_]+\}', Name.Variable),
+            #(r'\d+', Number),
+            #(r'\w', Name),
+            #3(r'[|/+*?^$.\-\<\>\!\&]', Operator),
+            #(r'\\[abfnrtv]', String.Escape),
+            #(r'\\[AbBdDsSwWZ]', String.Regex),
+            #(r'\\.', String.Literal),
+            #(r'[\[\]{}}\,\(\)]', Punctuation), 
+            #include('whitespace'),
+        #],

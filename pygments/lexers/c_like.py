@@ -751,7 +751,7 @@ class FlexLexer(RegexLexer):
         'regex': [
             (r'\n', Whitespace, '#pop'),
             (r'"', String, 'string'),
-            (r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
+            (r'\[:(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):\]', Name.Builtin),
             (r'\{[\w_]+\}', Name.Variable),
             (r'\d+', Number),
             (r'\w', Name),

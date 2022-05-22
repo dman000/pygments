@@ -712,7 +712,7 @@ class FlexLexer(RegexLexer):
         # Handle the rules section
         'rules': [
             #include('whitespace'),
-            (r'%%', String.Delimiter, ('usercode')),
+            (r'%%', String.Delimiter, ('usercode','#pop')),
             (r'/\*',Comment.Multiline,'CommentMulti'),
             (r'\n',Whitespace),
             (r'[\t\s]+',Whitespace,'cLexer'),
@@ -733,18 +733,8 @@ class FlexLexer(RegexLexer):
             (r'\n',Whitespace,'#pop'),
             #include('whitespace'),
             (r'"', String, 'string'),
-            (r'{',String,'multilineLex'),
             (r'/\*',Comment.Multiline,'CommentMulti'),
             (r'(.+?)(\n)',bygroups(using(CLexer),Whitespace),'#pop'),
-        ],
-        #Handle multiple lines of c Code when between curly brackets
-        'multilineLex': [
-            include('whitespace'),
-            (r'{',String.Delimiter,'#push'),
-            (r'}',Name.Builtin,'#pop'),
-            (r'/\*',Comment.Multiline,'CommentMulti'),
-            (r'(.+?)(\n)',bygroups(using(CLexer),Whitespace)),
-
         ],
         # Handle the user code section
         'usercode': [
@@ -820,22 +810,3 @@ class FlexLexer(RegexLexer):
     #         inherit,
     #     ]
     # }
-    #'rules': [
-     #       #include('whitespace'),
-      #      (r'%%', String.Delimiter, ('usercode', '#pop')),
-       #     (r'\[',String,'regex'),
-        #    ('\n',Whitespace),
-         #   (r'/\*',Comment.Multiline,'CommentMulti'),
-          #  (r'[\t\s]+',Whitespace,'cLexer'),
-           # (r'"', String, 'string'),
-            #(r':(alnum|alpha|blank|cntrl|digit|graph|lower|print|punct|space|upper|xdigit):', Name.Builtin),
-            #(r'\{[\w_]+\}', Name.Variable),
-            #(r'\d+', Number),
-            #(r'\w', Name),
-            #3(r'[|/+*?^$.\-\<\>\!\&]', Operator),
-            #(r'\\[abfnrtv]', String.Escape),
-            #(r'\\[AbBdDsSwWZ]', String.Regex),
-            #(r'\\.', String.Literal),
-            #(r'[\[\]{}}\,\(\)]', Punctuation), 
-            #include('whitespace'),
-        #],
